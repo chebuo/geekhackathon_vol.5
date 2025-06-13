@@ -15,8 +15,13 @@ public class UDPSensorReceiver : MonoBehaviour
     float bottomLeft = 0f;
     float bottomRight = 0f;
     float weight;
+    public static float balance_x;
+    public static float balance_z;
+    public static float jumpforce;
+    float resistance=3;
     object lockObj = new object();
-    bool isJump;
+    public static bool isJump;
+    public static bool stop;
     Rigidbody rb;
     void Start()
     {
@@ -29,11 +34,15 @@ public class UDPSensorReceiver : MonoBehaviour
 
     void Update()
     {
-        float balance = 0f;
+        balance_x = 0f;
+        balance_z = 0f;
+       
         lock (lockObj)
         {
-            balance = topRight - topLeft; // 簡易的な左右バランス
-            weight=(topLeft+topRight+bottomLeft+bottomRight)/ 4;
+           
+            weight = (topLeft + topRight + bottomLeft + bottomRight) / 4;
+            balance_x = ((topRight+bottomRight) - (topLeft+bottomLeft))/weight; // 簡易的な前後バランス
+            balance_z = ((topLeft+topRight) - (bottomLeft+bottomRight))/weight/3; // 簡易的な左右バランス       
         }
         if (weight < 2f) 
         {
@@ -43,8 +52,28 @@ public class UDPSensorReceiver : MonoBehaviour
         {
             isJump=false;
         }
-        Debug.Log(isJump);
-        rb.AddForce(balance / 5, 0, 0);
+        if (isJump)
+        {
+            jumpforce += resistance;
+            resistance -= 0.5f;
+        }
+        else
+        {
+            jumpforce = 0;
+            resistance = 3;
+        }
+        if (topLeft - topRight < 5 && topLeft - bottomLeft < 5 && topRight - bottomRight < 5 && bottomLeft - bottomRight < 5)
+        {
+            stop=true;
+        }
+        else
+        {
+            stop = false;
+        }
+        Debug.Log(stop);
+        //Debug.Log($"Received TL:{topLeft} TR:{topRight} BL:{bottomLeft} BR:{bottomRight}");
+        //Debug.Log(isJump);
+        //rb.AddForce(balance / 5, 0, 0);
         //transform.position = new Vector3(balance, 0, 0);
     }
 
@@ -66,9 +95,11 @@ public class UDPSensorReceiver : MonoBehaviour
                     topRight = float.Parse(sensors[1].Split(':')[1]);
                     bottomLeft = float.Parse(sensors[2].Split(':')[1]);
                     bottomRight = float.Parse(sensors[3].Split(':')[1]);
+                    topLeft=RoundDown(topLeft);
+                    topRight=RoundDown(topRight);
+                    bottomLeft = RoundDown(bottomLeft);
+                    bottomRight = RoundDown(bottomRight);
                 }
-
-                //Debug.Log($"Received TL:{topLeft} TR:{topRight} BL:{bottomLeft} BR:{bottomRight}");
             }
             catch (System.Exception ex)
             {
@@ -76,7 +107,14 @@ public class UDPSensorReceiver : MonoBehaviour
             }
         }
     }
-
+    float RoundDown(float boardedge)
+    {
+        if (Mathf.Abs(boardedge) < 10)
+        {
+            boardedge = 0;
+        }
+        return boardedge;
+    }
     void OnApplicationQuit()
     {
         if (thread != null && thread.IsAlive) thread.Abort();
