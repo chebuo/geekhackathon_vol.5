@@ -27,7 +27,6 @@ public class PlayerControllerTest : MonoBehaviour
             float velocity_x = rb.velocity.x;
             float velocity_z = rb.velocity.z;
             rb.AddForce(Vector3.up*10);
-            Debug.Log("toto");
         }
     }
 }

@@ -24,7 +24,7 @@ public class UDPSensorReceiver : MonoBehaviour
     object lockObj = new object();
     public static bool isJump;
     public static bool stop;
-    public static bool isRide;
+    public static bool isRide=false;
     float jumping=0;
     void Start()
     {
@@ -76,6 +76,11 @@ public class UDPSensorReceiver : MonoBehaviour
         {
             jumpforce = 0;
             resistance = 3;
+        }
+
+        if (!isRide)
+        {
+            isJump= false;
         }
 
         if (topLeft - topRight < 5 && topLeft - bottomLeft < 5 && topRight - bottomRight < 5 && bottomLeft - bottomRight < 5)//dS‚ª‚Æ‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©
