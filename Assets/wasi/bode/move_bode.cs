@@ -23,10 +23,10 @@ public class move_bode : MonoBehaviour
     void Update()
     {
         bode_x = UDPSensorReceiver.balance_x;
-        bode_z = UDPSensorReceiver.balance_z;
+        bode_z = UDPSensorReceiver.balance_z/3;
         if (UDPSensorReceiver.isJump)
         {
-            bode_y += 0.1f;
+            bode_y += UDPSensorReceiver.jumpforce;
         }
         else
         {
