@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using UnityEngine.UIElements;
 
 public class UDPSensorReceiver : MonoBehaviour
 {
@@ -10,17 +11,23 @@ public class UDPSensorReceiver : MonoBehaviour
     Thread thread;
     int port = 27335;
 
-    float topLeft = 0f;
-    float topRight = 0f;
-    float bottomLeft = 0f;
-    float bottomRight = 0f;
+    public static float topLeft = 0f;
+    public static float topRight = 0f;
+    public static float bottomLeft = 0f;
+    public static float bottomRight = 0f;
     float weight;
+    public static float balance_x;
+    public static float balance_z;
+
+    public static float jumpforce;
+    float resistance=3;
     object lockObj = new object();
-    bool isJump;
-    Rigidbody rb;
+    public static bool isJump;
+    public static bool stop;
+    public static bool isRide=false;
+    float jumping=0;
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
         udp = new UdpClient(port);
         thread = new Thread(new ThreadStart(ReceiveData));
         thread.IsBackground = true;
@@ -29,22 +36,65 @@ public class UDPSensorReceiver : MonoBehaviour
 
     void Update()
     {
-        float balance = 0f;
+        balance_x = 0f;
+        balance_z = 0f;
+       
         lock (lockObj)
-        {
-            balance = topRight - topLeft; // 簡易的な左右バランス
-            weight=(topLeft+topRight+bottomLeft+bottomRight)/ 4;
+        {          
+            balance_x = ((topRight+bottomRight) - (topLeft+bottomLeft))/2; // 前後バランス
+            balance_z = ((topLeft+topRight) - (bottomLeft+bottomRight))/2; // 左右バランス       
         }
-        if (weight < 2f) 
+      
+        if (weight < 15f)//jumpしたかどうか
         {
-            isJump = true;
+            if(isRide)isJump = true;
         }
         else
         {
-            isJump=false;
+            isJump = false;
         }
-        Debug.Log(isJump);
-        rb.AddForce(balance / 5, 0, 0);
+        if (isJump)//乗っているかどうか
+        {
+            jumping += Time.deltaTime;
+            if (jumping > 2)
+            {
+                isRide = false;
+            }
+        }
+        else
+        {
+            jumping = 0;
+            isRide= true;
+        }
+
+        if (isJump)
+        {
+            jumpforce += resistance;
+            resistance -= 0.5f;
+        }
+        else
+        {
+            jumpforce = 0;
+            resistance = 3;
+        }
+
+        if (!isRide)
+        {
+            isJump= false;
+        }
+
+        if (topLeft - topRight < 5 && topLeft - bottomLeft < 5 && topRight - bottomRight < 5 && bottomLeft - bottomRight < 5)//重心がとれているかどうか
+        {
+            stop=true;
+        }
+        else
+        {
+            stop = false;
+        }
+        Debug.Log(weight);
+        //Debug.Log($"Received TL:{topLeft} TR:{topRight} BL:{bottomLeft} BR:{bottomRight}");
+        //Debug.Log(isJump);
+        //rb.AddForce(balance / 5, 0, 0);
         //transform.position = new Vector3(balance, 0, 0);
     }
 
@@ -66,9 +116,20 @@ public class UDPSensorReceiver : MonoBehaviour
                     topRight = float.Parse(sensors[1].Split(':')[1]);
                     bottomLeft = float.Parse(sensors[2].Split(':')[1]);
                     bottomRight = float.Parse(sensors[3].Split(':')[1]);
+                    weight = (topLeft + topRight + bottomLeft + bottomRight) / 4;
+                    /*if (weight > 10)
+                    {
+                        isRide = true;
+                    }
+                    else
+                    {
+                        isRide = false;
+                    }*/
+                    topLeft = RoundDown(topLeft);
+                    topRight=RoundDown(topRight);
+                    bottomLeft = RoundDown(bottomLeft);
+                    bottomRight = RoundDown(bottomRight);
                 }
-
-                //Debug.Log($"Received TL:{topLeft} TR:{topRight} BL:{bottomLeft} BR:{bottomRight}");
             }
             catch (System.Exception ex)
             {
@@ -76,7 +137,14 @@ public class UDPSensorReceiver : MonoBehaviour
             }
         }
     }
-
+    float RoundDown(float boardedge)//乗っていないときに出る値の切り捨て
+    {
+        if (Mathf.Abs(boardedge) < 10)
+        {
+            boardedge = 0;
+        }
+        return boardedge;
+    }
     void OnApplicationQuit()
     {
         if (thread != null && thread.IsAlive) thread.Abort();
