@@ -14,6 +14,7 @@ public class PlayerControllerTest : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!UDPSensorReceiver.isConnect) return;
         rb.AddForce(Vector3.back*UDPSensorReceiver.balance_x);
         rb.AddForce(Vector3.back*UDPSensorReceiver.balance_x);
         rb.AddForce(Vector3.right * UDPSensorReceiver.balance_z);
@@ -27,6 +28,14 @@ public class PlayerControllerTest : MonoBehaviour
             float velocity_x = rb.velocity.x;
             float velocity_z = rb.velocity.z;
             rb.AddForce(Vector3.up*10);
+        }
+
+        Transform transform = this.transform;
+        Vector3 worldAngle = transform.eulerAngles;
+        if (Mathf.Abs(UDPSensorReceiver.balance_z) < 60)
+        {
+            worldAngle.y = UDPSensorReceiver.balance_z;
+            transform.eulerAngles = worldAngle;
         }
     }
 }

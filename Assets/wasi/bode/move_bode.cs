@@ -22,6 +22,7 @@ public class move_bode : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!UDPSensorReceiver.isConnect) return;
         bode_x = UDPSensorReceiver.balance_x;
         bode_z = UDPSensorReceiver.balance_z/3;
         if (UDPSensorReceiver.isJump)

@@ -10,7 +10,7 @@ public class Camera_angle : MonoBehaviour
     void Update()
     {
         // オフセットをターゲットのローカル回転を考慮して適用
-        Vector3 rotatedOffset = target.rotation * offset;
+        Vector3 rotatedOffset = offset;
 
         // カメラの位置を更新
         transform.position = target.position + rotatedOffset;

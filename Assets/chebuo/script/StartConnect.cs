@@ -7,7 +7,7 @@ public class StartConnect : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string exePath = "C:/Github/geekhackthon/geek_hackathon_vol.5/Assets/StreamingAssets/wiiboardSender.exe";
+        string exePath = "C:/Github/geekhackthon/geek_hackathon_vol.5/Assets/StreamingAssets/BalanceWiiBoard/wiiboardSender.exe";
         try
         {
             ProcessStartInfo startInfo = new ProcessStartInfo(exePath)
