@@ -22,6 +22,7 @@ public class UDPSensorReceiver : MonoBehaviour
     public static float jumpforce;
     float resistance=3;
     object lockObj = new object();
+    public static bool isConnect;
     public static bool isJump;
     public static bool stop;
     public static bool isRide=false;
@@ -41,8 +42,8 @@ public class UDPSensorReceiver : MonoBehaviour
        
         lock (lockObj)
         {          
-            balance_x = ((topRight+bottomRight) - (topLeft+bottomLeft))/2; // 前後バランス
-            balance_z = ((topLeft+topRight) - (bottomLeft+bottomRight))/2; // 左右バランス       
+            balance_x = ((topLeft+topRight) - (bottomLeft+bottomRight))/2; // 左右バランス       
+            balance_z = ((topRight + bottomRight) - (topLeft + bottomLeft)) / 2; // 前後バランス
         }
       
         if (weight < 15f)//jumpしたかどうか
@@ -69,8 +70,8 @@ public class UDPSensorReceiver : MonoBehaviour
 
         if (isJump)
         {
-            jumpforce += resistance;
-            resistance -= 0.5f;
+            /*jumpforce += resistance;
+            resistance -= 0.5f;*/
         }
         else
         {
@@ -130,10 +131,12 @@ public class UDPSensorReceiver : MonoBehaviour
                     bottomLeft = RoundDown(bottomLeft);
                     bottomRight = RoundDown(bottomRight);
                 }
+                isConnect = true;
             }
             catch (System.Exception ex)
             {
                 Debug.LogError("UDP Receive Error: " + ex.Message);
+                isConnect = false;
             }
         }
     }
