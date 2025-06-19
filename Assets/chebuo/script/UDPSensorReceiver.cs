@@ -42,7 +42,7 @@ public class UDPSensorReceiver : MonoBehaviour
        
         lock (lockObj)
         {          
-            balance_x = ((topLeft+topRight) - (bottomLeft+bottomRight))/2; // 左右バランス       
+            balance_x = (-(topLeft+topRight) + (bottomLeft+bottomRight))/2; // 左右バランス       
             balance_z = ((topRight + bottomRight) - (topLeft + bottomLeft)) / 2; // 前後バランス
         }
       
