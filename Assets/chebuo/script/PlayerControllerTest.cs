@@ -15,10 +15,14 @@ public class PlayerControllerTest : MonoBehaviour
     void Update()
     {
         if (!UDPSensorReceiver.isConnect) return;
-        rb.AddForce(Vector3.back*UDPSensorReceiver.balance_x);
-        rb.AddForce(Vector3.back*UDPSensorReceiver.balance_x);
-        rb.AddForce(Vector3.right * UDPSensorReceiver.balance_z);
-        rb.AddForce(Vector3.right * UDPSensorReceiver.balance_z);
+        rb.AddForce(Vector3.back * -5);
+        if (rb.velocity.magnitude < 20)
+        { 
+            rb.AddForce(Vector3.back * UDPSensorReceiver.balance_x / 8);
+            rb.AddForce(Vector3.back * UDPSensorReceiver.balance_x / 8);
+            rb.AddForce(Vector3.right * UDPSensorReceiver.balance_z / 8);
+            rb.AddForce(Vector3.right * UDPSensorReceiver.balance_z / 8);
+        }
         if (UDPSensorReceiver.stop)
         {
             rb.AddForce(0, 0, 0);
