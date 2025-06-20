@@ -9,10 +9,13 @@ public class WiimoteRotationReceiver : MonoBehaviour
     private UdpClient udp;
     private Thread thread;
 
-    // デバイスごとの回転データを保持
-    public float[] deviceRoll = new float[2];   // インデックス0:デバイス1, 1:デバイス2
+    public float[] deviceRoll = new float[2];
     public float[] devicePitch = new float[2];
     public float[] deviceYaw = new float[2];
+
+    public GameObject wii1;
+    public GameObject wii2;
+
 
     void Start()
     {
@@ -20,6 +23,19 @@ public class WiimoteRotationReceiver : MonoBehaviour
         thread = new Thread(ReceiveData);
         thread.IsBackground = true;
         thread.Start();
+    }
+
+    void Update()
+    {
+        if (wii1 != null)
+        {
+            wii1.transform.rotation = Quaternion.Euler(devicePitch[0], deviceYaw[0], deviceRoll[0]);
+        }
+
+        if (wii2 != null)
+        {
+            wii2.transform.rotation = Quaternion.Euler(devicePitch[1], deviceYaw[1], deviceRoll[1]);
+        }
     }
 
     private void ReceiveData()
@@ -33,7 +49,6 @@ public class WiimoteRotationReceiver : MonoBehaviour
                 string message = Encoding.UTF8.GetString(data);
                 string[] parts = message.Split(',');
 
-                // Device[N],roll,pitch,yaw の形式でデータを受信
                 if (parts.Length == 4 &&
                     parts[0].StartsWith("Device") &&
                     int.TryParse(parts[0].Substring(6), out int deviceId) &&
@@ -41,14 +56,12 @@ public class WiimoteRotationReceiver : MonoBehaviour
                     float.TryParse(parts[2], out float p) &&
                     float.TryParse(parts[3], out float y))
                 {
-                    // デバイスIDは1から始まるので、配列のインデックスに合わせて-1
                     int index = deviceId - 1;
                     if (index >= 0 && index < 2)
                     {
                         deviceRoll[index] = r;
                         devicePitch[index] = p;
                         deviceYaw[index] = y;
-                        Debug.Log($"Device{deviceId}: Roll={r:F2}, Pitch={p:F2}, Yaw={y:F2}");
                     }
                 }
             }
@@ -60,7 +73,7 @@ public class WiimoteRotationReceiver : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
+    void OnApplicationQuit()
     {
         udp?.Close();
         thread?.Abort();
