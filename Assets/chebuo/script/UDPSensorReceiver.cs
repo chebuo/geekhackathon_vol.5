@@ -92,7 +92,7 @@ public class UDPSensorReceiver : MonoBehaviour
         {
             stop = false;
         }
-        Debug.Log(weight);
+        //Debug.Log(weight);
         //Debug.Log($"Received TL:{topLeft} TR:{topRight} BL:{bottomLeft} BR:{bottomRight}");
         //Debug.Log(isJump);
         //rb.AddForce(balance / 5, 0, 0);
