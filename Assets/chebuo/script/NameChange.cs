@@ -1,16 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using LootLocker.Requests;
 public class NameChange : MonoBehaviour
 {
     public string leaderboardID = "31440";
     int score;
     public string name="usako";
+    InputField inputfield;
+    Text text;
     // Start is called before the first frame update
     void Start()
     {
-        
+        inputfield=GetComponent<InputField>();
+        text= GetComponent<Text>();
     }
     public void ChangeName()
     {
@@ -45,20 +49,6 @@ public class NameChange : MonoBehaviour
             if(response.success)
             {
                 Debug.Log("ƒvƒŒƒCƒ„[–¼" + name);
-            }
-            else
-            {
-                Debug.Log("no");
-            }
-            done = true;
-        });
-        yield return new WaitUntil(() => done);
-        string PlayerID = PlayerPrefs.GetString("PlayerID");
-        LootLockerSDKManager.SubmitScore(playerID, score, leaderboardID, (response) =>
-        {
-            if (response.success)
-            {
-                Debug.Log("scoresosin");
             }
             else
             {

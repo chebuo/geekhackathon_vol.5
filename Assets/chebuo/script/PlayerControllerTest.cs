@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class PlayerControllerTest : MonoBehaviour
 {
-    float time;
-    public bool isGame = false;
-    public bool isGoal = false;
+    public static float time;
+    public static bool isGame = false;
+    public static bool isGoal = false;
     Rigidbody rb;
     // Start is called before the first frame update
     void Start()

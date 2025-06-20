@@ -8,15 +8,11 @@ public class CountDown : MonoBehaviour
     float count=3;
     GameObject counttext;
     Text text;
-    GameObject player;
-    PlayerControllerTest playerController;
     // Start is called before the first frame update
     void Start()
     {
         counttext = GameObject.Find("countdown");
         text=counttext.GetComponent<Text>();
-        player = GameObject.Find("player");
-        playerController=player.GetComponent<PlayerControllerTest>();
     }
 
     // Update is called once per frame
@@ -30,7 +26,7 @@ public class CountDown : MonoBehaviour
         else
         {
             text.text = "GO";
-            playerController.isGame = true;
+            PlayerControllerTest.isGame = true;
         }
         if(count < -2)
         {

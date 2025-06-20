@@ -7,18 +7,24 @@ using UnityEngine.SocialPlatforms.Impl;
 public class LootLockerConnect : MonoBehaviour
 {
     public string leaderboardID = "31439";
+    int i = 0;
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(GetPlayerRanking(20));
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+      
+        if (PlayerControllerTest.isGoal && PlayerControllerTest.isGame&&i==0)
+        {
+            StartCoroutine(SendScore((int)PlayerControllerTest.time));
+            i++;
+        }
+
     }
-    IEnumerator GetPlayerRanking(int score)
+    IEnumerator SendScore(int score)
     {
         bool done = false;
         LootLockerSDKManager.StartGuestSession((response) =>
@@ -48,20 +54,6 @@ public class LootLockerConnect : MonoBehaviour
             {
                 Debug.Log("スコアアップロード失敗: " + response.errorData?.message);
             }
-        });
-        yield return new WaitUntil(() => done);
-        done = false;
-        LootLockerSDKManager.GetMemberRank(leaderboardID, PlayerID, (response) =>
-        {
-            if (response.success)
-            {
-                Debug.Log($"順位:{response.rank}/{response.score}");
-            }
-            else
-            {
-                Debug.Log("sippai");
-            }
-            done = true;
         });
         yield return new WaitUntil(() => done);
     }
