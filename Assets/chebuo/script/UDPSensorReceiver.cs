@@ -20,7 +20,6 @@ public class UDPSensorReceiver : MonoBehaviour
     public static float balance_z;
 
     public static float jumpforce;
-    float resistance=3;
     object lockObj = new object();
     public static bool isConnect;
     public static bool isJump;
@@ -66,17 +65,6 @@ public class UDPSensorReceiver : MonoBehaviour
         {
             jumping = 0;
             isRide= true;
-        }
-
-        if (isJump)
-        {
-            /*jumpforce += resistance;
-            resistance -= 0.5f;*/
-        }
-        else
-        {
-            jumpforce = 0;
-            resistance = 3;
         }
 
         if (!isRide)
@@ -135,7 +123,7 @@ public class UDPSensorReceiver : MonoBehaviour
             }
             catch (System.Exception ex)
             {
-                Debug.LogError("UDP Receive Error: " + ex.Message);
+                Debug.Log(ex.Message);
                 isConnect = false;
             }
         }
