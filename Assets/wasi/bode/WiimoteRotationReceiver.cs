@@ -7,43 +7,57 @@ using System.Threading;
 public class WiimoteRotationReceiver : MonoBehaviour
 {
     private UdpClient udp;
-    private Thread thread;
+    private Thread receiveThread;
 
-    public float[] deviceRoll = new float[2];
-    public float[] devicePitch = new float[2];
-    public float[] deviceYaw = new float[2];
+    [System.Serializable]
+    public class WiimoteData
+    {
+        public float roll;
+        public float pitch;
+        public float yaw;
 
-    public GameObject wii1;
-    public GameObject wii2;
+        public Vector3 CurrentEuler => new Vector3(pitch, yaw, roll);
+        public Vector3 PreviousEuler;
+        public Vector3 DeltaEuler;
+        public GameObject targetObject;
+    }
 
+    public WiimoteData[] devices = new WiimoteData[2];
 
     void Start()
     {
+        // 初期化
+        for (int i = 0; i < devices.Length; i++)
+            devices[i] = new WiimoteData();
+
         udp = new UdpClient(9000);
-        thread = new Thread(ReceiveData);
-        thread.IsBackground = true;
-        thread.Start();
+        receiveThread = new Thread(ReceiveData);
+        receiveThread.IsBackground = true;
+        receiveThread.Start();
     }
 
     void Update()
     {
-        if (wii1 != null)
+        for (int i = 0; i < devices.Length; i++)
         {
-            wii1.transform.rotation = Quaternion.Euler(devicePitch[0], deviceYaw[0], deviceRoll[0]);
-        }
+            var device = devices[i];
 
-        if (wii2 != null)
-        {
-            wii2.transform.rotation = Quaternion.Euler(devicePitch[1], deviceYaw[1], deviceRoll[1]);
+            Vector3 current = device.CurrentEuler;
+            device.DeltaEuler = current - device.PreviousEuler;
+            device.PreviousEuler = current;
+
+            if (device.targetObject != null)
+                device.targetObject.transform.rotation = Quaternion.Euler(current);
         }
     }
 
     private void ReceiveData()
     {
         IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
-        while (true)
+
+        try
         {
-            try
+            while (true)
             {
                 byte[] data = udp.Receive(ref remoteEP);
                 string message = Encoding.UTF8.GetString(data);
@@ -57,25 +71,25 @@ public class WiimoteRotationReceiver : MonoBehaviour
                     float.TryParse(parts[3], out float y))
                 {
                     int index = deviceId - 1;
-                    if (index >= 0 && index < 2)
+                    if (index >= 0 && index < devices.Length)
                     {
-                        deviceRoll[index] = r;
-                        devicePitch[index] = p;
-                        deviceYaw[index] = y;
+                        devices[index].roll = r;
+                        devices[index].pitch = p;
+                        devices[index].yaw = y;
                     }
                 }
             }
-            catch (SocketException ex)
-            {
-                Debug.Log("UDP受信エラー: " + ex.Message);
-                break;
-            }
+        }
+        catch (SocketException ex)
+        {
+            Debug.Log("UDP受信エラー: " + ex.Message);
         }
     }
 
     void OnApplicationQuit()
     {
         udp?.Close();
-        thread?.Abort();
+        if (receiveThread != null && receiveThread.IsAlive)
+            receiveThread.Abort();
     }
 }
