@@ -22,8 +22,9 @@ public class PlayerControllerTest : MonoBehaviour
         {
             time += Time.deltaTime;
         }
-        Debug.Log(time);
+        //Debug.Log(time);
         if (!UDPSensorReceiver.isConnect) return;
+        Debug.Log("tomato");
         rb.AddForce(Vector3.back * -5);
         if (rb.velocity.magnitude > 40)
         {

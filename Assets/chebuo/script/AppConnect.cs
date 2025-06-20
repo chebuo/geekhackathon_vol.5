@@ -16,7 +16,7 @@ public class BalanceBoardConnector : MonoBehaviour
             };
 
             Process.Start(startInfo);
-            UnityEngine.Debug.Log("BalanceWalker を起動しました。Bluetooth接続を自動で行ってください。");
+            UnityEngine.Debug.Log("BalanceWalker 起動Bluetooth接続");
         }
         else
         {
