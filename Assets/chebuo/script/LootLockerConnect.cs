@@ -1,7 +1,8 @@
+using LootLocker.Requests;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using LootLocker.Requests;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class LootLockerConnect : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class LootLockerConnect : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(GetPlayerRanking());
+        StartCoroutine(GetPlayerRanking(20));
     }
 
     // Update is called once per frame
@@ -17,7 +18,7 @@ public class LootLockerConnect : MonoBehaviour
     {
         
     }
-    IEnumerator GetPlayerRanking()
+    IEnumerator GetPlayerRanking(int score)
     {
         bool done = false;
         LootLockerSDKManager.StartGuestSession((response) =>
@@ -36,6 +37,19 @@ public class LootLockerConnect : MonoBehaviour
         });
         yield return new WaitUntil(()=>done);
         string PlayerID = PlayerPrefs.GetString("PlayerID");
+        done = false;
+        LootLockerSDKManager.SubmitScore("PlayerID", score, leaderboardID, (response) =>
+        {
+            if (response.success)
+            {
+                Debug.Log("スコアアップロード成功！");
+            }
+            else
+            {
+                Debug.Log("スコアアップロード失敗: " + response.errorData?.message);
+            }
+        });
+        yield return new WaitUntil(() => done);
         done = false;
         LootLockerSDKManager.GetMemberRank(leaderboardID, PlayerID, (response) =>
         {
