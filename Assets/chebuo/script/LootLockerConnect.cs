@@ -2,6 +2,7 @@ using LootLocker.Requests;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 
 public class LootLockerConnect : MonoBehaviour
@@ -54,7 +55,10 @@ public class LootLockerConnect : MonoBehaviour
             {
                 Debug.Log("スコアアップロード失敗: " + response.errorData?.message);
             }
+            done = true;
         });
         yield return new WaitUntil(() => done);
+        PlayerControllerTest.isGame = false;
+        SceneManager.LoadScene("TitleScene");
     }
 }
