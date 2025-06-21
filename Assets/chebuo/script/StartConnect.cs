@@ -13,11 +13,10 @@ public class StartConnect : MonoBehaviour
             ProcessStartInfo startInfo = new ProcessStartInfo(exePath)
             {
                 UseShellExecute = false,
-                CreateNoWindow=false
+                //CreateNoWindow=true
             };
             Process.Start(startInfo);
-            UnityEngine.Debug.Log("setuzoku");
-        }
+            UnityEngine.Debug.Log("setuzoku");        }
         catch(System.Exception ex)
         {
             UnityEngine.Debug.Log(ex.Message);

@@ -5,7 +5,7 @@ using UnityEngine;
 public class Camera_angle : MonoBehaviour
 {
     public Transform target; // プレイヤー
-    public Vector3 offset = new Vector3(0, 2, -5); // カメラの相対的な位置
+    public Vector3 offset = new Vector3(0, 3, -7); // カメラの相対的な位置
 
     void Update()
     {
