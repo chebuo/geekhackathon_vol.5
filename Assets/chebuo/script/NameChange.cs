@@ -6,7 +6,6 @@ using LootLocker.Requests;
 public class NameChange : MonoBehaviour
 {
     public string leaderboardID = "31440";
-    int score;
     public string name="usako";
     InputField inputfield;
     Text text;
@@ -18,14 +17,14 @@ public class NameChange : MonoBehaviour
     }
     public void ChangeName()
     {
-        StartCoroutine(SendName(score));
+        StartCoroutine(SendName());
     }
     // Update is called once per frame
     void Update()
     {
         
     }
-    IEnumerator SendName(int score)
+    IEnumerator SendName()
     {
         bool done = false;
         LootLockerSDKManager.StartGuestSession((response) =>

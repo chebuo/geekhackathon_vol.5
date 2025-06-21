@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class ShowButton : MonoBehaviour
 {
-    public GameObject gameobject;
+    public GameObject panel;
+    public GameObject ranking;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,6 +19,10 @@ public class ShowButton : MonoBehaviour
     }
     public void ShowToggle()
     {
-        gameobject.SetActive(!gameobject.activeSelf);
+        panel.SetActive(!panel.activeSelf);
+    }
+    public void RankingToggle()
+    {
+        ranking.SetActive(!ranking.activeSelf);
     }
 }
