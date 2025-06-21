@@ -11,6 +11,7 @@ public class UDPSensorReceiver : MonoBehaviour
     Thread thread;
     int port = 27335;
 
+    bool hasLoggedConnection = false;
     public static float topLeft = 0f;
     public static float topRight = 0f;
     public static float bottomLeft = 0f;
@@ -36,6 +37,11 @@ public class UDPSensorReceiver : MonoBehaviour
 
     void Update()
     {
+        if (isConnect && !hasLoggedConnection)
+        {
+            Debug.Log("バランスボードに接続されました！");
+            hasLoggedConnection = true;
+        }
         balance_x = 0f;
         balance_z = 0f;
        
@@ -55,6 +61,7 @@ public class UDPSensorReceiver : MonoBehaviour
         }
         if (isJump)//乗っているかどうか
         {
+            Debug.Log(isJump);
             jumping += Time.deltaTime;
             if (jumping > 2)
             {
