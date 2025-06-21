@@ -14,6 +14,8 @@ public class Stick_acceleration : MonoBehaviour
 
     private float y, r, p;
     private float y2, r2, p2;
+    public bool rightshake;
+    public bool leftshake;
 
     private float prevP = 0f;
     private float prevP2 = 0f;
@@ -23,7 +25,7 @@ public class Stick_acceleration : MonoBehaviour
     public GameObject device2;
     public GameObject boad_r;
     public GameObject boad_l;
-
+    Rigidbody rb;
     [Header("ピッチ角の差分しきい値（加速のトリガー）")]
     public float pitchThreshold = 30f; // 角度差のしきい値（例: 30度）
 
@@ -34,6 +36,7 @@ public class Stick_acceleration : MonoBehaviour
 
     void Start()
     {
+        rb = boad_r.GetComponent<Rigidbody>();
         udp = new UdpClient(9000);
         receiveThread = new Thread(ReceiveLoop);
         receiveThread.IsBackground = true;
@@ -55,9 +58,10 @@ public class Stick_acceleration : MonoBehaviour
             float deltaP = Mathf.Abs(p - prevP);
             if (deltaP >= pitchThreshold)
             {
-                Rigidbody rb = boad_r.GetComponent<Rigidbody>();
+                
                 if (rb != null)
                 {
+                    rightshake = true;
                     rb.AddForce(boad_r.transform.forward * forceMagnitude, ForceMode.Impulse);
                     Debug.Log("Device1 に加速");
                 }
@@ -79,9 +83,9 @@ public class Stick_acceleration : MonoBehaviour
             float deltaP2 = Mathf.Abs(p2 - prevP2);
             if (deltaP2 >= pitchThreshold)
             {
-                Rigidbody rb = boad_l.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
+                    leftshake = true;
                     rb.AddForce(boad_l.transform.forward * forceMagnitude, ForceMode.Impulse);
                     Debug.Log("Device2 に加速");
                 }
