@@ -1269,19 +1269,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b945d67c1314364d8e6f78eb19a923a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  devices:
-  - roll: 0
-    pitch: 0
-    yaw: 0
-    PreviousEuler: {x: 0, y: 0, z: 0}
-    DeltaEuler: {x: 0, y: 0, z: 0}
-    targetObject: {fileID: 0}
-  - roll: 0
-    pitch: 0
-    yaw: 0
-    PreviousEuler: {x: 0, y: 0, z: 0}
-    DeltaEuler: {x: 0, y: 0, z: 0}
-    targetObject: {fileID: 0}
+  device1: {fileID: 1745058706}
+  device2: {fileID: 0}
 --- !u!4 &1230255152
 Transform:
   m_ObjectHideFlags: 0
