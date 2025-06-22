@@ -8,7 +8,7 @@ public class PlayerControllerTest : MonoBehaviour
     public static bool isGame = false;
     public static bool isGoal = false;
     Rigidbody rb;
-    private int rotation_sub=80;
+    private int rotation_sub=180;
     private int rotation_rimit = 40;
 
     void Start()
@@ -27,9 +27,9 @@ public class PlayerControllerTest : MonoBehaviour
         if (!UDPSensorReceiver.isConnect) return;
 
         // センサーデータのログ出力
-        Debug.Log("balance_x: " + UDPSensorReceiver.balance_x);
-        Debug.Log("balance_z: " + UDPSensorReceiver.balance_z);
-        Debug.Log("stop: " + UDPSensorReceiver.stop);
+        //Debug.Log("balance_x: " + UDPSensorReceiver.balance_x);
+        //Debug.Log("balance_z: " + UDPSensorReceiver.balance_z);
+        //Debug.Log("stop: " + UDPSensorReceiver.stop);
         // Debug.Log("isJump: " + UDPSensorReceiver.isJump); // 必要に応じて
 
         //rb.AddForce(this.transform.forward * 5);
