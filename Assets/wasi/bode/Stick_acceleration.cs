@@ -48,6 +48,7 @@ public class Stick_acceleration : MonoBehaviour
     private float leftShakeTime = -10f;
     private float rightShakeTime = -10f;
 
+    Animator animator;
     void Start()
     {
         rb = target.GetComponent<Rigidbody>();
@@ -55,6 +56,7 @@ public class Stick_acceleration : MonoBehaviour
         receiveThread = new Thread(ReceiveLoop);
         receiveThread.IsBackground = true;
         receiveThread.Start();
+        animator= gameObject.GetComponent<Animator>();
     }
 
     void Update()
@@ -103,16 +105,19 @@ public class Stick_acceleration : MonoBehaviour
             float avgSpeed = (pitchSpeed1 + pitchSpeed2) / 2f;
             rb.AddForce(target.transform.forward * avgSpeed * accelerationMultiplier, ForceMode.Force);
             Debug.Log($"前進加速: {avgSpeed:F1}");
+            animator.SetBool("boolD", true);
         }
         else if (leftshake)
         {
             rb.AddForce(-target.transform.right * pitchSpeed1 * accelerationMultiplier, ForceMode.Force);
             Debug.Log($"左加速: {pitchSpeed1:F1}");
+            animator.SetBool("boolL", true);
         }
         else if (rightshake)
         {
             rb.AddForce(target.transform.right * pitchSpeed2 * accelerationMultiplier, ForceMode.Force);
             Debug.Log($"右加速: {pitchSpeed2:F1}");
+            animator.SetBool("boolR", true);
         }
 
         // 速度制限
