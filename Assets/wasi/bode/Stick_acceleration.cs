@@ -48,6 +48,7 @@ public class Stick_acceleration : MonoBehaviour
     private float leftShakeTime = -10f;
     private float rightShakeTime = -10f;
 
+    [SerializeField] GameObject usako;
     Animator animator;
     void Start()
     {
@@ -56,7 +57,7 @@ public class Stick_acceleration : MonoBehaviour
         receiveThread = new Thread(ReceiveLoop);
         receiveThread.IsBackground = true;
         receiveThread.Start();
-        animator= gameObject.GetComponent<Animator>();
+        animator= usako.GetComponent<Animator>();
     }
 
     void Update()
@@ -106,18 +107,32 @@ public class Stick_acceleration : MonoBehaviour
             rb.AddForce(target.transform.forward * avgSpeed * accelerationMultiplier, ForceMode.Force);
             Debug.Log($"前進加速: {avgSpeed:F1}");
             animator.SetBool("boolD", true);
+            animator.SetBool("boolR", false);
+            animator.SetBool("boolL", false);
+
         }
         else if (leftshake)
         {
             rb.AddForce(-target.transform.right * pitchSpeed1 * accelerationMultiplier, ForceMode.Force);
             Debug.Log($"左加速: {pitchSpeed1:F1}");
+            animator.SetBool("boolD", false);
+            animator.SetBool("boolR", false);
             animator.SetBool("boolL", true);
         }
         else if (rightshake)
         {
             rb.AddForce(target.transform.right * pitchSpeed2 * accelerationMultiplier, ForceMode.Force);
             Debug.Log($"右加速: {pitchSpeed2:F1}");
+            animator.SetBool("boolD", false);
             animator.SetBool("boolR", true);
+            animator.SetBool("boolL", false);
+        }
+        else
+        {
+            animator.SetBool("boolD", false);
+            animator.SetBool("boolL", false);
+            animator.SetBool("boolR", false);
+            Debug.Log("tomato");
         }
 
         // 速度制限

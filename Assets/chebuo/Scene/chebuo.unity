@@ -1765,6 +1765,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8878948087223137157, guid: 7b225d2f64e2ad1478fa077580002bfc, type: 3}
   m_PrefabInstance: {fileID: 1018785911}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1025829839 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2537305624540041742, guid: 66e1240ebba203943832dd8eb045f326, type: 3}
+  m_PrefabInstance: {fileID: 1073177433}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1035047611
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3498,7 +3503,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1745058706}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 0}
 --- !u!4 &1745058711
 Transform:
   m_ObjectHideFlags: 0
@@ -3590,10 +3595,11 @@ MonoBehaviour:
   velocityThreshold: 1000
   accelerationMultiplier: 0.1
   maxSpeed: 20
-  cooldownDuration: 0.6
+  cooldownDuration: 0
   gracePeriod: 0.1
   leftshake: 0
   rightshake: 0
+  usako: {fileID: 1025829839}
 --- !u!1001 &1746519219
 PrefabInstance:
   m_ObjectHideFlags: 0
