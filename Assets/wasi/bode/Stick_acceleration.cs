@@ -12,31 +12,28 @@ public class Stick_acceleration : MonoBehaviour
     private Thread receiveThread;
     private bool running = true;
 
-    private float y, r, p;
-    private float y2, r2, p2;
-    public bool rightshake;
-    public bool leftshake;
-
+    private float p, p2;
     private float prevP = 0f;
     private float prevP2 = 0f;
 
-    [Header("デバイスとして操作対象のオブジェクト")]
-    public GameObject device1;
-    public GameObject device2;
-    public GameObject boad_r;
-    public GameObject boad_l;
-    Rigidbody rb;
-    [Header("ピッチ角の差分しきい値（加速のトリガー）")]
-    public float pitchThreshold = 30f; // 角度差のしきい値（例: 30度）
-
-    [Header("加える力の大きさ（インパルス）")]
-    public float forceMagnitude = 10f;
+    private float pitchSpeed1 = 0f;
+    private float pitchSpeed2 = 0f;
 
     private Vector3[] currentEuler = new Vector3[2];
 
+    [Header("加速対象のオブジェクト")]
+    public GameObject target;
+    private Rigidbody rb;
+
+    [Header("ピッチ速度のしきい値（これを超えたら反応）")]
+    public float velocityThreshold = 130f;
+
+    [Header("加速の強さに乗算する係数")]
+    public float forceMultiplier = 0.0001f;
+
     void Start()
     {
-        rb = boad_r.GetComponent<Rigidbody>();
+        rb = target.GetComponent<Rigidbody>();
         udp = new UdpClient(9000);
         receiveThread = new Thread(ReceiveLoop);
         receiveThread.IsBackground = true;
@@ -45,57 +42,39 @@ public class Stick_acceleration : MonoBehaviour
 
     void Update()
     {
-        // Device1 処理
-        if (device1 != null)
+        // 各デバイスの角速度を計算
+        Vector3 euler1 = currentEuler[0];
+        p = euler1.x;
+        pitchSpeed1 = Mathf.Abs(p - prevP) / Time.deltaTime;
+        prevP = p;
+
+        Vector3 euler2 = currentEuler[1];
+        p2 = euler2.x;
+        pitchSpeed2 = Mathf.Abs(p2 - prevP2) / Time.deltaTime;
+        prevP2 = p2;
+
+        bool leftShake = pitchSpeed1 >= velocityThreshold;
+        bool rightShake = pitchSpeed2 >= velocityThreshold;
+
+        // 加速判定（左右 or 前）
+        if (leftShake && rightShake)
         {
-            Vector3 euler = currentEuler[0];
-            p = euler.x;
-            y = euler.y;
-            r = euler.z;
-
-            device1.transform.rotation = Quaternion.Euler(euler);
-
-            float deltaP = Mathf.Abs(p - prevP);
-            if (deltaP >= pitchThreshold)
-            {
-                
-                if (rb != null)
-                {
-                    rightshake = true;
-                    rb.AddForce(boad_r.transform.forward * forceMagnitude, ForceMode.Impulse);
-                    Debug.Log("Device1 に加速");
-                }
-            }
-
-            prevP = p;
+            float avgSpeed = (pitchSpeed1 + pitchSpeed2) / 2f;
+            rb.AddForce(target.transform.forward * avgSpeed * forceMultiplier, ForceMode.Impulse);
+            Debug.Log($"両振り → 前進（強さ: {avgSpeed:F1}）");
+        }
+        else if (leftShake)
+        {
+            rb.AddForce(-target.transform.right * pitchSpeed1 * forceMultiplier, ForceMode.Impulse);
+            Debug.Log($"左振り → 左に加速（強さ: {pitchSpeed1:F1}）");
+        }
+        else if (rightShake)
+        {
+            rb.AddForce(target.transform.right * pitchSpeed2 * forceMultiplier, ForceMode.Impulse);
+            Debug.Log($"右振り → 右に加速（強さ: {pitchSpeed2:F1}）");
         }
 
-        // Device2 処理
-        if (device2 != null)
-        {
-            Vector3 euler = currentEuler[1];
-            p2 = euler.x;
-            y2 = euler.y;
-            r2 = euler.z;
-
-            device2.transform.rotation = Quaternion.Euler(euler);
-
-            float deltaP2 = Mathf.Abs(p2 - prevP2);
-            if (deltaP2 >= pitchThreshold)
-            {
-                if (rb != null)
-                {
-                    leftshake = true;
-                    rb.AddForce(boad_l.transform.forward * forceMagnitude, ForceMode.Impulse);
-                    Debug.Log("Device2 に加速");
-                }
-            }
-
-            prevP2 = p2;
-        }
-
-        Debug.Log($"Device1: Pitch={p}, Yaw={y}, Roll={r}");
-        Debug.Log($"Device2: Pitch={p2}, Yaw={y2}, Roll={r2}");
+        Debug.Log($"角速度 | 左: {pitchSpeed1:F1}, 右: {pitchSpeed2:F1}");
     }
 
     private void ReceiveLoop()
@@ -123,7 +102,7 @@ public class Stick_acceleration : MonoBehaviour
             }
             catch (SocketException ex)
             {
-                Debug.Log("UDP受信中のエラー: " + ex.Message);
+                Debug.Log("UDP受信エラー: " + ex.Message);
             }
         }
     }
