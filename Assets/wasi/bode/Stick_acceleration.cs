@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -25,11 +24,29 @@ public class Stick_acceleration : MonoBehaviour
     public GameObject target;
     private Rigidbody rb;
 
-    [Header("ピッチ速度のしきい値（これを超えたら反応）")]
-    public float velocityThreshold = 130f;
+    [Header("角速度しきい値")]
+    public float velocityThreshold = 120f;
 
-    [Header("加速の強さに乗算する係数")]
-    public float forceMultiplier = 0.0001f;
+    [Header("加速倍率（角速度 × この値）")]
+    public float accelerationMultiplier = 0.01f;
+
+    [Header("最大速度")]
+    public float maxSpeed = 10f;
+
+    [Header("振った後のクールダウン時間（秒）")]
+    public float cooldownDuration = 1.0f;
+
+    [Header("前進とみなす猶予時間（秒）")]
+    public float gracePeriod = 0.3f;
+
+    private float leftCooldownTimer = 0f;
+    private float rightCooldownTimer = 0f;
+
+    public bool leftshake = false;
+    public bool rightshake = false;
+
+    private float leftShakeTime = -10f;
+    private float rightShakeTime = -10f;
 
     void Start()
     {
@@ -42,7 +59,11 @@ public class Stick_acceleration : MonoBehaviour
 
     void Update()
     {
-        // 各デバイスの角速度を計算
+        // クールダウンの更新
+        if (leftCooldownTimer > 0f) leftCooldownTimer -= Time.deltaTime;
+        if (rightCooldownTimer > 0f) rightCooldownTimer -= Time.deltaTime;
+
+        // ピッチ角速度の計算
         Vector3 euler1 = currentEuler[0];
         p = euler1.x;
         pitchSpeed1 = Mathf.Abs(p - prevP) / Time.deltaTime;
@@ -53,28 +74,52 @@ public class Stick_acceleration : MonoBehaviour
         pitchSpeed2 = Mathf.Abs(p2 - prevP2) / Time.deltaTime;
         prevP2 = p2;
 
-        bool leftShake = pitchSpeed1 >= velocityThreshold;
-        bool rightShake = pitchSpeed2 >= velocityThreshold;
+        // フラグ初期化
+        leftshake = false;
+        rightshake = false;
 
-        // 加速判定（左右 or 前）
-        if (leftShake && rightShake)
+        // しきい値超え ＆ クールダウン完了 → フラグON
+        if (pitchSpeed1 >= velocityThreshold && leftCooldownTimer <= 0f)
+        {
+            leftshake = true;
+            leftCooldownTimer = cooldownDuration;
+            leftShakeTime = Time.time;
+        }
+
+        if (pitchSpeed2 >= velocityThreshold && rightCooldownTimer <= 0f)
+        {
+            rightshake = true;
+            rightCooldownTimer = cooldownDuration;
+            rightShakeTime = Time.time;
+        }
+
+        // 両振りの猶予判定
+        bool bothShakenWithinGrace =
+            Mathf.Abs(leftShakeTime - rightShakeTime) <= gracePeriod;
+
+        // 加速処理
+        if (bothShakenWithinGrace)
         {
             float avgSpeed = (pitchSpeed1 + pitchSpeed2) / 2f;
-            rb.AddForce(target.transform.forward * avgSpeed * forceMultiplier, ForceMode.Impulse);
-            Debug.Log($"両振り → 前進（強さ: {avgSpeed:F1}）");
+            rb.AddForce(target.transform.forward * avgSpeed * accelerationMultiplier, ForceMode.Force);
+            Debug.Log($"前進加速: {avgSpeed:F1}");
         }
-        else if (leftShake)
+        else if (leftshake)
         {
-            rb.AddForce(-target.transform.right * pitchSpeed1 * forceMultiplier, ForceMode.Impulse);
-            Debug.Log($"左振り → 左に加速（強さ: {pitchSpeed1:F1}）");
+            rb.AddForce(-target.transform.right * pitchSpeed1 * accelerationMultiplier, ForceMode.Force);
+            Debug.Log($"左加速: {pitchSpeed1:F1}");
         }
-        else if (rightShake)
+        else if (rightshake)
         {
-            rb.AddForce(target.transform.right * pitchSpeed2 * forceMultiplier, ForceMode.Impulse);
-            Debug.Log($"右振り → 右に加速（強さ: {pitchSpeed2:F1}）");
+            rb.AddForce(target.transform.right * pitchSpeed2 * accelerationMultiplier, ForceMode.Force);
+            Debug.Log($"右加速: {pitchSpeed2:F1}");
         }
 
-        Debug.Log($"角速度 | 左: {pitchSpeed1:F1}, 右: {pitchSpeed2:F1}");
+        // 速度制限
+        if (rb.velocity.magnitude > maxSpeed)
+        {
+            rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
+        }
     }
 
     private void ReceiveLoop()
