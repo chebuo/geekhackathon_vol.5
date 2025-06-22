@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,31 +11,46 @@ public class Stick_acceleration : MonoBehaviour
     private Thread receiveThread;
     private bool running = true;
 
-    private float y, r, p;
-    private float y2, r2, p2;
-    public bool rightshake;
-    public bool leftshake;
-
+    private float p, p2;
     private float prevP = 0f;
     private float prevP2 = 0f;
 
-    [Header("デバイスとして操作対象のオブジェクト")]
-    public GameObject device1;
-    public GameObject device2;
-    public GameObject boad_r;
-    public GameObject boad_l;
-    Rigidbody rb;
-    [Header("ピッチ角の差分しきい値（加速のトリガー）")]
-    public float pitchThreshold = 30f; // 角度差のしきい値（例: 30度）
-
-    [Header("加える力の大きさ（インパルス）")]
-    public float forceMagnitude = 10f;
+    private float pitchSpeed1 = 0f;
+    private float pitchSpeed2 = 0f;
 
     private Vector3[] currentEuler = new Vector3[2];
 
+    [Header("加速対象のオブジェクト")]
+    public GameObject target;
+    private Rigidbody rb;
+
+    [Header("角速度しきい値")]
+    public float velocityThreshold = 120f;
+
+    [Header("加速倍率（角速度 × この値）")]
+    public float accelerationMultiplier = 0.01f;
+
+    [Header("最大速度")]
+    public float maxSpeed = 10f;
+
+    [Header("振った後のクールダウン時間（秒）")]
+    public float cooldownDuration = 1.0f;
+
+    [Header("前進とみなす猶予時間（秒）")]
+    public float gracePeriod = 0.3f;
+
+    private float leftCooldownTimer = 0f;
+    private float rightCooldownTimer = 0f;
+
+    public bool leftshake = false;
+    public bool rightshake = false;
+
+    private float leftShakeTime = -10f;
+    private float rightShakeTime = -10f;
+
     void Start()
     {
-        rb = boad_r.GetComponent<Rigidbody>();
+        rb = target.GetComponent<Rigidbody>();
         udp = new UdpClient(9000);
         receiveThread = new Thread(ReceiveLoop);
         receiveThread.IsBackground = true;
@@ -45,57 +59,67 @@ public class Stick_acceleration : MonoBehaviour
 
     void Update()
     {
-        // Device1 処理
-        if (device1 != null)
+        // クールダウンの更新
+        if (leftCooldownTimer > 0f) leftCooldownTimer -= Time.deltaTime;
+        if (rightCooldownTimer > 0f) rightCooldownTimer -= Time.deltaTime;
+
+        // ピッチ角速度の計算
+        Vector3 euler1 = currentEuler[0];
+        p = euler1.x;
+        pitchSpeed1 = Mathf.Abs(p - prevP) / Time.deltaTime;
+        prevP = p;
+
+        Vector3 euler2 = currentEuler[1];
+        p2 = euler2.x;
+        pitchSpeed2 = Mathf.Abs(p2 - prevP2) / Time.deltaTime;
+        prevP2 = p2;
+
+        // フラグ初期化
+        leftshake = false;
+        rightshake = false;
+
+        // しきい値超え ＆ クールダウン完了 → フラグON
+        if (pitchSpeed1 >= velocityThreshold && leftCooldownTimer <= 0f)
         {
-            Vector3 euler = currentEuler[0];
-            p = euler.x;
-            y = euler.y;
-            r = euler.z;
-
-            device1.transform.rotation = Quaternion.Euler(euler);
-
-            float deltaP = Mathf.Abs(p - prevP);
-            if (deltaP >= pitchThreshold)
-            {
-                
-                if (rb != null)
-                {
-                    rightshake = true;
-                    rb.AddForce(boad_r.transform.forward * forceMagnitude, ForceMode.Impulse);
-                    Debug.Log("Device1 に加速");
-                }
-            }
-
-            prevP = p;
+            leftshake = true;
+            leftCooldownTimer = cooldownDuration;
+            leftShakeTime = Time.time;
         }
 
-        // Device2 処理
-        if (device2 != null)
+        if (pitchSpeed2 >= velocityThreshold && rightCooldownTimer <= 0f)
         {
-            Vector3 euler = currentEuler[1];
-            p2 = euler.x;
-            y2 = euler.y;
-            r2 = euler.z;
-
-            device2.transform.rotation = Quaternion.Euler(euler);
-
-            float deltaP2 = Mathf.Abs(p2 - prevP2);
-            if (deltaP2 >= pitchThreshold)
-            {
-                if (rb != null)
-                {
-                    leftshake = true;
-                    rb.AddForce(boad_l.transform.forward * forceMagnitude, ForceMode.Impulse);
-                    Debug.Log("Device2 に加速");
-                }
-            }
-
-            prevP2 = p2;
+            rightshake = true;
+            rightCooldownTimer = cooldownDuration;
+            rightShakeTime = Time.time;
         }
 
-        Debug.Log($"Device1: Pitch={p}, Yaw={y}, Roll={r}");
-        Debug.Log($"Device2: Pitch={p2}, Yaw={y2}, Roll={r2}");
+        // 両振りの猶予判定
+        bool bothShakenWithinGrace =
+            Mathf.Abs(leftShakeTime - rightShakeTime) <= gracePeriod;
+
+        // 加速処理
+        if (bothShakenWithinGrace)
+        {
+            float avgSpeed = (pitchSpeed1 + pitchSpeed2) / 2f;
+            rb.AddForce(target.transform.forward * avgSpeed * accelerationMultiplier, ForceMode.Force);
+            Debug.Log($"前進加速: {avgSpeed:F1}");
+        }
+        else if (leftshake)
+        {
+            rb.AddForce(-target.transform.right * pitchSpeed1 * accelerationMultiplier, ForceMode.Force);
+            Debug.Log($"左加速: {pitchSpeed1:F1}");
+        }
+        else if (rightshake)
+        {
+            rb.AddForce(target.transform.right * pitchSpeed2 * accelerationMultiplier, ForceMode.Force);
+            Debug.Log($"右加速: {pitchSpeed2:F1}");
+        }
+
+        // 速度制限
+        if (rb.velocity.magnitude > maxSpeed)
+        {
+            rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
+        }
     }
 
     private void ReceiveLoop()
@@ -123,7 +147,7 @@ public class Stick_acceleration : MonoBehaviour
             }
             catch (SocketException ex)
             {
-                Debug.Log("UDP受信中のエラー: " + ex.Message);
+                Debug.Log("UDP受信エラー: " + ex.Message);
             }
         }
     }
