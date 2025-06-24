@@ -7,16 +7,16 @@ public class NameChange : MonoBehaviour
 {
     public string leaderboardID = "31440";
     public string name="usako";
+    public GameObject nameObj;
     InputField inputfield;
-    Text text;
     // Start is called before the first frame update
     void Start()
     {
-        inputfield=GetComponent<InputField>();
-        text= GetComponent<Text>();
+        inputfield=nameObj.GetComponent<InputField>();
     }
     public void ChangeName()
     {
+        name = inputfield.text;
         StartCoroutine(SendName());
     }
     // Update is called once per frame
