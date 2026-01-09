@@ -382,7 +382,7 @@ MonoBehaviour:
   m_InputType: 0
   m_AsteriskChar: 42
   m_KeyboardType: 0
-  m_LineType: 2
+  m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 0
   m_CharacterLimit: 0
@@ -1630,6 +1630,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leaderboardID: 31440
   name: usako
+  nameObj: {fileID: 110467616}
 --- !u!114 &932647910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2380,7 +2381,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u3069\u3053\u3067\u3082\u30B9\u30AD\u30FC"
+  m_Text: EXCITE SKIING
 --- !u!222 &1949475867
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2952,7 +2953,7 @@ MonoBehaviour:
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 0
-    m_HorizontalOverflow: 0
+    m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 

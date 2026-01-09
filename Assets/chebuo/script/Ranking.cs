@@ -47,11 +47,13 @@ public class Ranking : MonoBehaviour
                 {
                     GameObject rankObj = Instantiate(rankItemPrefab, rankParent);
                     Text text = rankObj.GetComponent<Text>();
+                    RectTransform rectTransform = rankObj.GetComponent<RectTransform>();
                     if (text)
                     {
                         string name = string.IsNullOrEmpty(item.player.name) ? "usako" : item.player.name;
                         text.text = $"{item.rank}ˆÊ {name} {item.score}";
                     }
+                    rectTransform.anchoredPosition =new Vector2(0,item.rank*-40) ;
                 }
             }
             else
